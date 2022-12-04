@@ -1,0 +1,27 @@
+{
+    "name": "pavher/sdao",
+    "description": "Simple DAO implementation",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pavel Herink"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.1",
+        "nette/database": "^3.0",
+        "nette/utils": "^3.0",
+        "nette/caching": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "7.5"
+    },
+    "autoload": {
+        "psr-4": {"Pavher\\Sdao\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Pavher\\Sdao\\Tests\\": "tests/"}
+    }
+}
