@@ -283,6 +283,8 @@ abstract class ReadonlyEntity implements IEntity
                 case "array":
                     if (is_string($value)) {
                         $castValue = unserialize($value, null);
+                    } else {
+                        $castValue = $value;
                     }
                     break;
                 default:
