@@ -281,6 +281,7 @@ abstract class ReadonlyEntity implements IEntity
                         // db date string
                         $castValue = new DateTime($value);
                     }
+                    break;
                 case "array":
                     if (is_string($value)) {
                         $castValue = unserialize($value, null);
