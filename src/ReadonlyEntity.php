@@ -270,9 +270,12 @@ abstract class ReadonlyEntity implements IEntity
                     break;
                 case "DateTime":
                 case "\DateTime":
-                    if ($value instanceof \DateTimeImmutable) {
-                        $castValue = DateTime::createFromImmutable($value);
-                    } elseif ($value instanceof \DateTime) {
+                if ($value instanceof \DateTimeImmutable) {
+                    $castValue = \DateTime::createFromFormat(
+                        \DateTimeInterface::ATOM,
+                        $value->format(\DateTimeInterface::ATOM)
+                    );
+                } elseif ($value instanceof \DateTime) {
                         $castValue = $value;
                     } elseif (is_array($value) && isset($value["date"])) {
                         // deserialized json assoc array
