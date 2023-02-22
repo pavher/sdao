@@ -18,21 +18,6 @@ abstract class DatabaseRepository extends ReadonlyDatabaseRepository implements 
     //<editor-fold desc="Methods - public">
 
     /**
-     * @param int $id
-     * @return mixed|null
-     * @throws \RuntimeException
-     */
-    public function getById(int $id)
-    {
-        return $this->get($this->dbContext->query(
-            'SELECT ' . $this->getSqlQueryFieldsForSelectOneItem()
-            . ' FROM ' . $this->getSqlQueryFromClauseForSelect()
-            . ' WHERE ' . $this->getTablePrimaryKeyNameForDbQuery()
-            . ' = ?',
-            $id));
-    }
-
-    /**
      * Save entity to database.
      * @param IPersistableDatabaseEntity $entity
      * @throws EntityUnrelatedToRepositoryException

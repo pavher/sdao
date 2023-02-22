@@ -149,5 +149,28 @@ abstract class ReadonlyDatabaseRepository extends Repository implements IReadabl
         throw new NotImplementedException('Method getSqlQueryFromClauseForSelect() have to be implemented before calling "get" methods');
     }
 
+    /**
+     * Returns primary key for getById method.
+     * @return string
+     */
+    protected function getTablePrimaryKeyNameForDbQuery(): string
+    {
+        throw new NotImplementedException('Method getTablePrimaryKeyNameForDbQuery() have to be implemented before calling "getById" method');
+    }
+
+    /**
+     * @param int $id
+     * @return mixed|null
+     * @throws \RuntimeException
+     */
+    public function getById(int $id)
+    {
+        return $this->get($this->dbContext->query(
+            'SELECT ' . $this->getSqlQueryFieldsForSelectOneItem()
+            . ' FROM ' . $this->getSqlQueryFromClauseForSelect()
+            . ' WHERE ' . $this->getTablePrimaryKeyNameForDbQuery()
+            . ' = ?',
+            $id));
+    }
     //</editor-fold>
 }
