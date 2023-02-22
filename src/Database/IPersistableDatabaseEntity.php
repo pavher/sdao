@@ -10,8 +10,9 @@ namespace Pavher\Sdao\Database;
 
 
 use Pavher\Sdao\IEntity;
+use Pavher\Sdao\IIdGetter;
 
-interface IPersistableDatabaseEntity extends IEntity
+interface IPersistableDatabaseEntity extends IEntity, IIdGetter
 {
     /**
      * Get entity primary key name.
@@ -30,11 +31,4 @@ interface IPersistableDatabaseEntity extends IEntity
      * @return bool
      */
     public function isNewRecord(): bool;
-
-    /**
-     * Get entity primary key value.
-     * @return int
-     */
-    public function getId(): ?int;
-
 }
