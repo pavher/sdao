@@ -13,6 +13,7 @@ use Nette\Database\Context;
 use Nette\Database\ResultSet;
 use Nette\NotImplementedException;
 use Nette\SmartObject;
+use Pavher\Sdao\IEntity;
 use Pavher\Sdao\Repository;
 
 abstract class ReadonlyDatabaseRepository extends Repository implements IReadableDatabaseRepository
@@ -46,11 +47,11 @@ abstract class ReadonlyDatabaseRepository extends Repository implements IReadabl
     /**
      * Get row from result set and create entity.
      * @param ResultSet $resultSet
-     * @return mixed (null|IEntity)
+     * @return IEntity|null
      * @throws \RuntimeException
      */
 
-    public function get(ResultSet $resultSet)
+    public function get(ResultSet $resultSet): ?IEntity
     {
         $current = $resultSet->fetch();
 
@@ -67,8 +68,21 @@ abstract class ReadonlyDatabaseRepository extends Repository implements IReadabl
     //<editor-fold desc="Methods - public">
 
     /**
-     * @param ?array $whereArr Assoc array of conditions [name1 => value1, name2 => value2] ... -> WHERE name1 = value1 AND name2 = value2 ...
-     * @param ?array $orderArr Assoc array [orderByField1 => true, orderByField2 => false] ... -> ORDER BY orderByField1 ASC, orderByField2. DESC Default order by primary key.
+     * @param array|null $whereArr Assoc array of conditions [name1 => value1, name2 => value2] ... -> WHERE name1 = value1 AND name2 = value2 ...
+     * @param array|null $orderArr Assoc array [orderByField1 => true, orderByField2 => false] ... -> ORDER BY orderByField1 ASC, orderByField2. DESC Default order by primary key.
+     * @return IEntity|null
+     */
+    public function getFirst(
+        ?array $whereArr = null,
+        ?array $orderArr = null
+    ): ?IEntity {
+        $query = $this->getResultSet($whereArr, $orderArr, 1, 0);
+        return $this->get($query);
+    }
+
+    /**
+     * @param array|null $whereArr Assoc array of conditions [name1 => value1, name2 => value2] ... -> WHERE name1 = value1 AND name2 = value2 ...
+     * @param array|null $orderArr Assoc array [orderByField1 => true, orderByField2 => false] ... -> ORDER BY orderByField1 ASC, orderByField2. DESC Default order by primary key.
      * @param int $limit Default 0.
      * @param int $offset Default 1000.
      * @return IDatabaseEntityIterator
@@ -79,7 +93,26 @@ abstract class ReadonlyDatabaseRepository extends Repository implements IReadabl
         int $limit = 1000,
         int $offset = 0
     ): IDatabaseEntityIterator {
+        $query = $this->getResultSet($whereArr, $orderArr, $limit, $offset);
 
+        $entityIteratorClassName = $this->getEntityIteratorClassName();
+
+        return new $entityIteratorClassName($query, $this);
+    }
+
+    /**
+     * @param array|null $whereArr Assoc array of conditions [name1 => value1, name2 => value2] ... -> WHERE name1 = value1 AND name2 = value2 ...
+     * @param array|null $orderArr Assoc array [orderByField1 => true, orderByField2 => false] ... -> ORDER BY orderByField1 ASC, orderByField2. DESC Default order by primary key.
+     * @param int $limit Default 0.
+     * @param int $offset Default 1000.
+     * @return ResultSet
+     */
+    private function getResultSet(
+        ?array $whereArr = null,
+        ?array $orderArr = null,
+        int $limit = 1000,
+        int $offset = 0
+    ): ResultSet {
         if($whereArr !== null && $orderArr !== null) {
             $query = $this->dbContext->query(/** @lang MySQL */ 'SELECT '. $this->getSqlQueryFieldsForSelectItemList()
                 . ' FROM ' . $this->getSqlQueryFromClauseForSelect()
@@ -98,13 +131,11 @@ abstract class ReadonlyDatabaseRepository extends Repository implements IReadabl
                 . ' LIMIT ? OFFSET ?', $limit, $offset);
         }
 
-        $entityIteratorClassName = $this->getEntityIteratorClassName();
-
-        return new $entityIteratorClassName($query, $this);
+        return $query;
     }
 
     /**
-     * @param ?array $whereAndArr
+     * @param array|null $whereAndArr
      * @return int
      */
     public function getTotal(
