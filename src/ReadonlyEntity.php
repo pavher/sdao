@@ -15,7 +15,7 @@ use Pavher\Sdao\Exceptions\UndeclaredPropertyException;
 use Pavher\Sdao\Exceptions\UnsetPropertyException;
 use Pavher\Sdao\Utils\EntityPropertiesParser;
 
-abstract class ReadonlyEntity implements IEntity
+abstract class ReadonlyEntity implements IEntity, \JsonSerializable
 {
     //<editor-fold desc="Consts">
 
@@ -293,9 +293,10 @@ abstract class ReadonlyEntity implements IEntity
                     }
                     break;
                 default:
-                    if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_string($value)) {
+                    if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_array($value)) {
+                        $castValue = new $type($value);
+                    } else if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_string($value)) {
                         $castValue = new $type(json_decode($value, true));
-
                     } else {
                         $castValue = $value;
                     }
@@ -341,6 +342,16 @@ abstract class ReadonlyEntity implements IEntity
         }
 
         return self::$entityPropertiesCache[$entityName][$propertyName];
+    }
+
+    public function jsonSerialize()
+    {
+        $res = [];
+        $arr = get_object_vars($this);
+        foreach ($arr["propertyArray"] as $key => $item) {
+            $res[$key] = $item["value"];
+        }
+        return $res;
     }
 
     //</editor-fold>
