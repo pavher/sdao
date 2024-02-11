@@ -63,7 +63,7 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
             }
 
             foreach ($defaultData as $defaultKey => $defaultVal) {
-                $this->performSetProperty($defaultKey, $defaultVal);
+                $this->performSetProperty($defaultKey, $defaultVal, false, $checkAllProperties);
             }
         }
 
@@ -74,7 +74,7 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
                 if ($checkAllProperties && !array_key_exists($propName, $data)) {
                     $unsetPropertyKeys[] = $propName;
                 } else if (array_key_exists($propName, $data)) {
-                    $this->performSetProperty($propName, $data[$propName]);
+                    $this->performSetProperty($propName, $data[$propName],  false, $checkAllProperties);
                     unset($data[$propName]);
                 }
             }
@@ -244,13 +244,15 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
      * @param string $name Property name.
      * @param mixed $value Property value.
      * @param bool $setChanged
+     * @param bool $checkAllNestedProperties
      */
-    protected function performSetProperty(string $name, $value, bool $setChanged = false): void
+    protected function performSetProperty(string $name, $value, bool $setChanged = false, $checkAllNestedProperties = true): void
     {
         $castValue = null;
 
         if ($value !== null && $value !== '') {
-            $type = $this->getEntityPropertyConfigurationArray($name)['type'];
+            $type = $this->getEntityPropertyConfigurationArray($name)[EntityPropertiesParser::ENTITY_PROPERTY_PARSER_TYPE_KEY];
+            $isArrayOfType = $this->getEntityPropertyConfigurationArray($name)[EntityPropertiesParser::ENTITY_PROPERTY_PARSER_TYPE_IS_ARRAY_KEY];
             switch ($type) {
                 case "int":
                 case "integer":
@@ -270,12 +272,12 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
                     break;
                 case "DateTime":
                 case "\DateTime":
-                if ($value instanceof \DateTimeImmutable) {
-                    $castValue = \DateTime::createFromFormat(
-                        \DateTimeInterface::ATOM,
-                        $value->format(\DateTimeInterface::ATOM)
-                    );
-                } elseif ($value instanceof \DateTime) {
+                    if ($value instanceof \DateTimeImmutable) {
+                        $castValue = \DateTime::createFromFormat(
+                            \DateTimeInterface::ATOM,
+                            $value->format(\DateTimeInterface::ATOM)
+                        );
+                    } elseif ($value instanceof \DateTime) {
                         $castValue = $value;
                     } elseif (is_array($value) && isset($value["date"])) {
                         // deserialized json assoc array
@@ -293,10 +295,24 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
                     }
                     break;
                 default:
-                    if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_array($value)) {
-                        $castValue = new $type($value);
+                    if($isArrayOfType && class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity'])) {
+                        // for annotation like ImageData[] serialize as array of types
+                        $castValue = [];
+                        if($value !== null) {
+                            $arr = [];
+                            if(is_array($value)) {
+                                $arr = $value;
+                            } else if(is_string($value)) {
+                                $arr = json_decode($value, true);
+                            }
+                            foreach ($arr as $key => $item) {
+                                $castValue[$key] = new $type($item, $checkAllNestedProperties);
+                            }
+                        }
+                    } else if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_array($value)) {
+                        $castValue = new $type($value, $checkAllNestedProperties);
                     } else if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_string($value)) {
-                        $castValue = new $type(json_decode($value, true));
+                        $castValue = new $type(json_decode($value, true), $checkAllNestedProperties);
                     } else {
                         $castValue = $value;
                     }

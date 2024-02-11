@@ -18,6 +18,7 @@ class EntityPropertiesParser
 
     public const ENTITY_PROPERTY_PARSER_NAME_KEY = "name";
     public const ENTITY_PROPERTY_PARSER_TYPE_KEY = "type";
+    public const ENTITY_PROPERTY_PARSER_TYPE_IS_ARRAY_KEY = "isArrayOfType";
     public const ENTITY_PROPERTY_PARSER_OWNER_KEY = "owner";
 
     /**
@@ -52,13 +53,14 @@ class EntityPropertiesParser
                     break;
                 }
                 $matches3 = [];
-                if (!preg_match('#^@(\w+)\s+([\w|\\\]+)(?:\s+(?:\$(\S+)))?#', $tagDocblockLine, $matches3)) {
+                if (!preg_match('#^@(\w+)\s+([\w|\\\]+)(\\[\\])?(?:\s+(?:\$(\S+)))?#', $tagDocblockLine, $matches3)) {
                     break;
                 }
 
                 if ($matches3[1] === 'property') {
-                    $phpDoc[$matches3[3]] = array(
-                        self::ENTITY_PROPERTY_PARSER_NAME_KEY => $matches3[3],
+                    $phpDoc[$matches3[4]] = array(
+                        self::ENTITY_PROPERTY_PARSER_NAME_KEY => $matches3[4],
+                        self::ENTITY_PROPERTY_PARSER_TYPE_IS_ARRAY_KEY => ("[]" === $matches3[3]),
                         self::ENTITY_PROPERTY_PARSER_TYPE_KEY => $matches3[2],
                         self::ENTITY_PROPERTY_PARSER_OWNER_KEY => $reflect->getShortName()
                     );
