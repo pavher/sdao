@@ -44,12 +44,11 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
      * Entity constructor.
      * @param array|\ArrayAccess $data Initial data collection.
      * @param bool $checkAllProperties
-     * @throws EntityConfigurationException
+     * @param bool $ignoreUnknownProperties
      * @throws UndeclaredPropertyException
      * @throws UnsetPropertyException
-     * @throws \InvalidArgumentException
      */
-    public function __construct(array $data = null, bool $checkAllProperties = true)
+    public function __construct(array $data = null, bool $checkAllProperties = true, bool $ignoreUnknownProperties = false)
     {
         if ($data !== null && (!is_array($data) && !$data instanceof \ArrayAccess)) {
             throw new \InvalidArgumentException('$data must be type of array or ArrayAccess');
@@ -63,7 +62,7 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
             }
 
             foreach ($defaultData as $defaultKey => $defaultVal) {
-                $this->performSetProperty($defaultKey, $defaultVal, false, $checkAllProperties);
+                $this->performSetProperty($defaultKey, $defaultVal, false, $checkAllProperties, $ignoreUnknownProperties);
             }
         }
 
@@ -74,7 +73,7 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
                 if ($checkAllProperties && !array_key_exists($propName, $data)) {
                     $unsetPropertyKeys[] = $propName;
                 } else if (array_key_exists($propName, $data)) {
-                    $this->performSetProperty($propName, $data[$propName],  false, $checkAllProperties);
+                    $this->performSetProperty($propName, $data[$propName],  false, $checkAllProperties, $ignoreUnknownProperties);
                     unset($data[$propName]);
                 }
             }
@@ -85,7 +84,7 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
                     get_class($this), implode(',', $unsetPropertyKeys)));
             }
 
-            if (count(array_keys($data)) > 0) {
+            if (!$ignoreUnknownProperties && count(array_keys($data)) > 0) {
                 // some extra property
                 throw new UndeclaredPropertyException(sprintf('Failed to create entity instance: %s, undeclared entity properties: [%s]',
                     get_class($this), implode(',', array_keys($data))));
@@ -245,8 +244,10 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
      * @param mixed $value Property value.
      * @param bool $setChanged
      * @param bool $checkAllNestedProperties
+     * @param bool $ignoreUnknownProperties
+     * @throws UndeclaredPropertyException
      */
-    protected function performSetProperty(string $name, $value, bool $setChanged = false, $checkAllNestedProperties = true): void
+    protected function performSetProperty(string $name, $value, bool $setChanged = false, $checkAllNestedProperties = true, bool $ignoreUnknownProperties = false): void
     {
         $castValue = null;
 
@@ -306,13 +307,13 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
                                 $arr = json_decode($value, true);
                             }
                             foreach ($arr as $key => $item) {
-                                $castValue[$key] = new $type($item, $checkAllNestedProperties);
+                                $castValue[$key] = new $type($item, $checkAllNestedProperties, $ignoreUnknownProperties);
                             }
                         }
                     } else if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_array($value)) {
-                        $castValue = new $type($value, $checkAllNestedProperties);
+                        $castValue = new $type($value, $checkAllNestedProperties, $ignoreUnknownProperties);
                     } else if (class_exists($type) && isset(class_implements($type)['Pavher\Sdao\IEntity']) && is_string($value)) {
-                        $castValue = new $type(json_decode($value, true), $checkAllNestedProperties);
+                        $castValue = new $type(json_decode($value, true), $checkAllNestedProperties, $ignoreUnknownProperties);
                     } else {
                         $castValue = $value;
                     }
