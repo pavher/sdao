@@ -257,19 +257,59 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
             switch ($type) {
                 case "int":
                 case "integer":
-                    $castValue = (int)$value;
+                    if($isArrayOfType) {
+                        if(is_array($value) && sizeof($value) > 0) {
+                            foreach ($value as $item) {
+                                $castValue[] = (int)$value;
+                            }
+                        } else {
+                            $castValue = null;
+                        }
+                    } else {
+                        $castValue = (int)$value;
+                    }
                     break;
                 case "double":
                 case "float":
                 case "real":
-                    $castValue = (double)$value;
+                    if($isArrayOfType) {
+                        if(is_array($value) && sizeof($value) > 0) {
+                            foreach ($value as $item) {
+                                $castValue[] = (double)$value;
+                            }
+                        } else {
+                            $castValue = null;
+                        }
+                    } else {
+                        $castValue = (double)$value;
+                    }
                     break;
                 case "bool":
                 case "boolean":
-                    $castValue = (bool)$value;
+                    if($isArrayOfType) {
+                        if(is_array($value) && sizeof($value) > 0) {
+                            foreach ($value as $item) {
+                                $castValue[] = (bool)$value;
+                            }
+                        } else {
+                            $castValue = null;
+                        }
+                    } else {
+                        $castValue = (bool)$value;
+                    }
                     break;
                 case "string":
-                    $castValue = (string)$value;
+                    if($isArrayOfType) {
+                        if(is_array($value) && sizeof($value) > 0) {
+                            foreach ($value as $item) {
+                                $castValue[] = (string)$item;
+                            }
+                        } else {
+                            $castValue = null;
+                        }
+                    } else {
+                        $castValue = (string)$value;
+                    }
                     break;
                 case "DateTime":
                 case "\DateTime":
