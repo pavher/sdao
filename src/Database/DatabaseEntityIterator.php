@@ -50,7 +50,7 @@ class DatabaseEntityIterator implements IDatabaseEntityIterator
      * Return the current element
      * @return mixed
      */
-    public function current()
+    public function current(): mixed
     {
         return $this->rowCollection[$this->key()];
     }
@@ -66,7 +66,7 @@ class DatabaseEntityIterator implements IDatabaseEntityIterator
     /**
      * Return the key of the current element
      */
-    public function key()
+    public function key(): mixed
     {
         return $this->key;
     }
@@ -74,7 +74,7 @@ class DatabaseEntityIterator implements IDatabaseEntityIterator
     /**
      * Checks if current position is valid
      */
-    public function valid()
+    public function valid(): bool
     {
         if (array_key_exists($this->key(), $this->rowCollection)) {
             return true;
@@ -92,7 +92,7 @@ class DatabaseEntityIterator implements IDatabaseEntityIterator
     /**
      * Rewind the Iterator to the first element
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->key = 0;
     }
@@ -106,7 +106,7 @@ class DatabaseEntityIterator implements IDatabaseEntityIterator
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    public function count(): int
     {
         return $this->resultSet->getRowCount() ?? 0;
     }

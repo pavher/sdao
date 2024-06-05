@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 class DatabaseEntityIteratorTest extends DatabaseTestParent
 {
     public static function setUpBeforeClass(
-    )/* The :void return type declaration that should be here would cause a BC issue */
+    ): void/* The :void return type declaration that should be here would cause a BC issue */
     {
         parent::setUpBeforeClass();
         $userRepository = new UserRepository(static::$dbContext);

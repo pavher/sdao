@@ -401,7 +401,7 @@ abstract class ReadonlyEntity implements IEntity, \JsonSerializable
         return self::$entityPropertiesCache[$entityName][$propertyName];
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $res = [];
         $arr = get_object_vars($this);

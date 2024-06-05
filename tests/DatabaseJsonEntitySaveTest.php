@@ -25,7 +25,7 @@ class DatabaseJsonEntitySaveTest extends TestCase
     protected static $dbContext;
 
     public static function setUpBeforeClass(
-    )/* The :void return type declaration that should be here would cause a BC issue */
+    ): void/* The :void return type declaration that should be here would cause a BC issue */
     {
         parent::setUpBeforeClass();
 
@@ -100,7 +100,7 @@ class DatabaseJsonEntitySaveTest extends TestCase
     }
 
     public static function tearDownAfterClass(
-    )/* The :void return type declaration that should be here would cause a BC issue */
+    ): void/* The :void return type declaration that should be here would cause a BC issue */
     {
         parent::tearDownAfterClass();
 
